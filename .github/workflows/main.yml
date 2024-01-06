@@ -18,7 +18,7 @@ jobs:
       run: |
         export SHELL=/bin/bash
         eval $(minikube -p minikube docker-env)
-        docker build -f ./Dockerfile -t local/py-app .
+        docker build -f ./Dockerfile -t devopshint/node-app:latest .
         echo -n "verifying images:"
         docker images        
     - name: Deploy to minikube
@@ -27,6 +27,6 @@ jobs:
     - name: Test service URLs
       run: |
         minikube service list
-        minikube service py-app --url
+        minikube service nodejs-app --url
         echo "------------------opening the service------------------"
-        curl $(minikube service py-app --url)        
+        curl $(minikube service nodejs-app --url)        
