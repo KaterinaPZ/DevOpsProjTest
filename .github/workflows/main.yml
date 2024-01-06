@@ -31,7 +31,6 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-
       - name: Tag an image
         run: docker tag Dockerfile kzah/devopsprojtest:latest
 
