@@ -1,0 +1,39 @@
+name: Build and publish Docker
+on:
+  push:
+    #branches: main
+jobs:
+   push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{ secrets.DOCKERUSERNAME }}
+          password: ${{ secrets.DOCKERPASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+            docker build -t "Dockerfile" .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'Dockerfile'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+
+      - name: Tag an image
+        run: docker tag Dockerfile kzah/devopsprojtest:latest
+
+      - name: Push an image to DockerHub
+        run: docker push kzah/devopsprojtest:latest
