@@ -19,12 +19,12 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-            docker build -t "Dockerfile" .
+            docker build -t "dockerfile" .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'Dockerfile'
+          image-ref: 'dockerfile'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
@@ -32,7 +32,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: Tag an image
-        run: docker tag Dockerfile kzah/devopsprojtest:latest
+        run: docker tag dockerfile kzah/devopsprojtest:latest
 
       - name: Push an image to DockerHub
         run: docker push kzah/devopsprojtest:latest
