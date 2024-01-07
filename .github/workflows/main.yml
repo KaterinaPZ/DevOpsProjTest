@@ -1,27 +1,50 @@
-name: Minikube CI
-
+name: Build and publish Docker
 on:
   push:
-    branches:
-      - main
-
+    #branches: main
 jobs:
-  build:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
 
-    - name: Set up Minikube
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y conntrack
-        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-        sudo install minikube-linux-amd64 /usr/local/bin/minikube
-        minikube start --config=minikube.yaml
+      - name: Check out the repo
+        uses: actions/checkout@v4
 
-    - name: Build and deploy your application
-      run: |
-        # Add your build and deployment commands here
-        kubectl apply -f k8s-node-app.yaml
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{ secrets.DOCKERUSERNAME }}
+          password: ${{ secrets.DOCKERPASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+            docker build -t "classwork1" .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'classwork1'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+
+      - name: Tag an image
+        run: docker tag classwork1 kzah/devopsprojtest:version1.0
+
+      - name: Push an image to DockerHub
+        run: docker push kzah/devopsprojtest:version1.0
+  kubernetes:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v1
+        with:
+          version: 'v1.21.3'
+        id: install
+      - name: Kubernetes deploy
+        run: kubectl apply -f deployment.yaml
