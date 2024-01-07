@@ -1,8 +1,9 @@
-FROM node:14
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install
-RUN npm install express
-COPY . .
-EXPOSE 8080
-CMD [ "node", "server.js" ]
+FROM python:3.7
+
+RUN mkdir /app
+WORKDIR /app
+ADD . /app/
+RUN pip install -r requirements.txt
+
+EXPOSE 5000
+CMD ["python", "/app/main.py"]
